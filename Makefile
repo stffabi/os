@@ -56,6 +56,9 @@ qcows:
 	cd scripts/images/openstack && \
 		APPEND="console=tty1 printk.devkmsg=on notsc clocksource=kvm-clock rancher.network.interfaces.eth0.ipv4ll rancher.cloud_init.datasources=[digitalocean] rancher.autologin=tty1 rancher.autologin=ttyS0 panic=10 rancher.resize_device=/dev/vda" \
 		NAME=digitalocean ../../../.dapper
+	cd scripts/images/openstack && \
+		APPEND="console=tty0 console=ttyS0,115200n8 rancher.cloud_init.datasources=[cloudstack] panic=10 rancher.resize_device=/dev/vda" \
+		NAME=cloudstack ../../../.dapper
 	cp ./scripts/images/openstack/dist/*.img dist/artifacts/
 
 rpi64:

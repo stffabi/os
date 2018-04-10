@@ -26,25 +26,28 @@ import (
 )
 
 type Service struct {
-	Root         string
-	Client       pkg.Getter
-	APIVersion   string
-	UserdataPath string
-	MetadataPath string
-	lastError    error
+	Root                 string
+	Client               pkg.Getter
+	APIVersion           string
+	UserdataPath         string
+	MetadataPath         string
+	IsAvailableCheckPath string
+	lastError            error
 }
 
 func NewDatasource(root, apiVersion, userdataPath, metadataPath string, header http.Header) Service {
 	if !strings.HasSuffix(root, "/") {
 		root += "/"
 	}
-	return Service{root, pkg.NewHTTPClientHeader(header), apiVersion, userdataPath, metadataPath, nil}
+	isAvailableCheckPath := apiVersion
+	return Service{root, pkg.NewHTTPClientHeader(header), apiVersion, userdataPath, metadataPath, isAvailableCheckPath, nil}
 }
 
 func (ms Service) IsAvailable() bool {
-	_, ms.lastError = ms.Client.Get(ms.Root + ms.APIVersion)
+	checkPath := ms.Root + ms.IsAvailableCheckPath
+	_, ms.lastError = ms.Client.Get(checkPath)
 	if ms.lastError != nil {
-		log.Errorf("%s: %s (lastError: %s)", "IsAvailable", ms.Root+":"+ms.UserdataPath, ms.lastError)
+		log.Errorf("%s: %s (lastError: %s)", "IsAvailable", checkPath, ms.lastError)
 	}
 	return (ms.lastError == nil)
 }
@@ -54,7 +57,7 @@ func (ms *Service) Finish() error {
 }
 
 func (ms *Service) String() string {
-	return fmt.Sprintf("%s: %s (lastError: %s)", "metadata", ms.Root+ms.UserdataPath, ms.lastError)
+	return fmt.Sprintf("%s: %s (lastError: %s)", "metadata", ms.UserdataURL(), ms.lastError)
 }
 
 func (ms Service) AvailabilityChanges() bool {
